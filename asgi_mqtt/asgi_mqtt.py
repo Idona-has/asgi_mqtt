@@ -26,7 +26,7 @@ class AsgiMqtt(object):
             )
         )
         self._client.on_connect=self.onConnect
-        self._client.on_disconnect=self.onDisconnect
+        # self._client.on_disconnect=self.onDisconnect
         self._client.on_message=self.onMessage
 
     def getChannel(self, channelName):
@@ -42,23 +42,23 @@ class AsgiMqtt(object):
         logger.info("Connected with status: {}".format(rc))
         client.subscribe("#")
 
-    @staticmethod
-    def onDisconnect(client, userdata, rc):
-        server=userdata['server']
-        logger.info("Disconnected!")
-        if not server._stop:
-            retries=3
-            for i in range(retries):
-                logger.info("Trying to reconnect...")
-                try:
-                    self._client.reconnect()
-                    logger.info("Reconnected!")
-                    break
-                except Exception as e:
-                    if i<retries:
-                        logger.warn(e)
-                        sleep(1)
-                    else: raise
+    # @staticmethod
+    # def onDisconnect(client, userdata, rc):
+    #     server=userdata['server']
+    #     logger.info("Disconnected!")
+    #     if not server._stop:
+    #         retries=3
+    #         for i in range(retries):
+    #             logger.info("Trying to reconnect...")
+    #             try:
+    #                 self._client.reconnect()
+    #                 logger.info("Reconnected!")
+    #                 break
+    #             except Exception as e:
+    #                 if i<retries:
+    #                     logger.warn(e)
+    #                     sleep(1)
+    #                 else: raise
 
     @staticmethod
     def onMessage(client, userdata, message):
@@ -96,9 +96,12 @@ class AsgiMqtt(object):
             )
         self._client.connect(self._host, self._port)
         logger.info("Starting MQTT loop")
+        self._client.loop_start()
         while not self._stop:
-            logger.debug("Restarting MQTT loop")
-            self._client.loop()
+            #logger.debug("Restarting MQTT loop")
+            #self._client.loop()
+            print("Received:",self._channel.receive(['mqtt.pub']))
+
         self._client.disconnect()
 
 def main():
