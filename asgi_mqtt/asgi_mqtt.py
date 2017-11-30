@@ -72,7 +72,8 @@ class AsgiMqtt(object):
                     payload=message.payload,
                     qos=message.qos,
                     host=userdata['host'],
-                    port=userdata['port']
+                    port=userdata['port'],
+                    reply_channel="mqtt.pub",
                 )
             )
         except Exception as e:
@@ -100,7 +101,8 @@ class AsgiMqtt(object):
         while not self._stop:
             #logger.debug("Restarting MQTT loop")
             #self._client.loop()
-            print("Received:",self._channel.receive(['mqtt.pub']))
+            channel,msg=self._channel.receive(['mqtt.pub'],True)
+            if channel and msg: print("Received:",channel,msg)
 
         self._client.disconnect()
 
