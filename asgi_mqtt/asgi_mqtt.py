@@ -82,7 +82,7 @@ class AsgiMqtt(object):
         while not self._stop:
             channel,msg=self._channel.receive(['mqtt.pub'],True)
             if channel and msg:
-                self._client.publish(msg.topic, msg.payload)
+                self._client.publish(msg['topic'], msg['payload'])
 
         self._client.disconnect()
 
