@@ -9,20 +9,22 @@ import paho.mqtt.client as mqtt
 logger=logging.getLogger(__name__)
 
 class AsgiMqtt(object):
-    def __init__(self, channel, host, port, username, password):
+    def __init__(self, channel, host, port, username, password, topics=['#']):
         self._stop=False
         self._channel=self.getChannel(channel)
         self._host=host
         self._port=port
         self._username=username
         self._password=password
+        self._topics=topics
 
         self._client=mqtt.Client(
             userdata=dict(
                 server=self,
                 channel=self._channel,
                 host=self._host,
-                port=self._port
+                port=self._port,
+                topics=self._topics
             )
         )
         self._client.on_connect=self.onConnect
@@ -39,7 +41,8 @@ class AsgiMqtt(object):
     @staticmethod
     def onConnect(client, userdata, flags, rc):
         logger.info("Connected with status: {}".format(rc))
-        client.subscribe("#")
+        for topic in userdata['topics']:
+            client.subscribe(topic)
 
     @staticmethod
     def onMessage(client, userdata, message):
@@ -94,6 +97,7 @@ def main():
     parser.add_argument("channel_layer", help="ASGI Channel 'path.to.module:instance.path'")
     parser.add_argument("-u", "--username", help="MQTT Broker Username")
     parser.add_argument("-P", "--password", help="MQTT Broker Password")
+    parser.add_argument("-t", "--topic", help="MQTT Topic to subscribe to", action="append")
     args=parser.parse_args()
 
     logging.basicConfig(
@@ -107,7 +111,8 @@ def main():
         )
     )
 
-    AsgiMqtt(args.channel_layer, args.host, args.port, args.username, args.password).run()
+    AsgiMqtt(args.channel_layer, args.host, args.port, 
+        args.username, args.password, args.topic).run()
 
 if __name__=="__main__":
     main()
